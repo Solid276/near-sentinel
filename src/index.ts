@@ -1,5 +1,5 @@
 ﻿import 'dotenv/config';
-import { Bot, Keyboard } from 'grammy';
+import { Bot, InlineKeyboard, Keyboard } from 'grammy';
 import express from 'express';
 import cron from 'node-cron';
 import { z } from 'zod';
@@ -39,6 +39,9 @@ const mainMenu = new Keyboard()
   .text('Stop tracking 🛑')
   .resized()
   .persistent();
+
+const websiteButton = new InlineKeyboard()
+  .url('Open NEAR Sentinel Website', 'https://near-sentinel.onrender.com/');
 
 const rpc = new NearRpc(env.NEAR_RPC_PRIMARY, env.NEAR_RPC_FALLBACK);
 const store = new Store(env.DATABASE_PATH);
@@ -205,6 +208,9 @@ bot.command('start', async ctx => {
     'Read-only. Never send a seed phrase or private key.',
     { reply_markup: mainMenu }
   );
+  await ctx.reply('Explore the live NEAR Sentinel website:', {
+    reply_markup: websiteButton
+  });
 });
 
 bot.command('help', async ctx => {
@@ -219,6 +225,9 @@ bot.command('help', async ctx => {
     'Monitoring interval: 60 seconds.',
     { reply_markup: mainMenu }
   );
+  await ctx.reply('Explore the live NEAR Sentinel website:', {
+    reply_markup: websiteButton
+  });
 });
 
 bot.command('track', async ctx => {

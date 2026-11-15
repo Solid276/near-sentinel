@@ -1,0 +1,1670 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1110">
+  <title>NEAR Sentinel | Lending Risk Monitor</title>
+
+  <style>
+    :root {
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+      color: #edf4f0;
+      background: #0b1110;
+      font-synthesis: none;
+      --bg: #0b1110;
+      --panel: #111b18;
+      --panel-soft: #15221d;
+      --border: #263a31;
+      --muted: #91a49a;
+      --green: #77e0a5;
+      --green-dark: #173c2b;
+      --red: #ff8585;
+      --yellow: #f2ce78;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(ellipse at 85% 0%, #16402c 0, transparent 35%),
+        radial-gradient(ellipse at 0% 45%, #13251d 0, transparent 35%),
+        var(--bg);
+    }
+
+    button, input { font: inherit; }
+
+    .wrap {
+      width: min(1120px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 38px 0 48px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding-bottom: 28px;
+      border-bottom: 1px solid #26352e;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      color: var(--green);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border: 1px solid #477b5d;
+      border-radius: 10px;
+      background: #153324;
+      font-size: 17px;
+    }
+
+    .readonly {
+      color: #a7c4b3;
+      border: 1px solid #345443;
+      border-radius: 999px;
+      padding: 7px 11px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .06em;
+    }
+
+    .intro { padding: 38px 0 24px; }
+
+    .eyebrow {
+      color: var(--green);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 10px 0;
+      font-size: clamp(34px, 6vw, 54px);
+      line-height: 1.04;
+      letter-spacing: -.045em;
+    }
+
+    .intro p {
+      max-width: 650px;
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    .panel {
+      padding: 22px;
+      border: 1px solid var(--border);
+      border-radius: 17px;
+      background: linear-gradient(145deg, #14221b, #101815);
+      box-shadow: 0 18px 60px #0003;
+    }
+
+    .section-heading {
+      margin: 0 0 15px;
+      font-size: 14px;
+      font-weight: 750;
+    }
+
+    .lookup-form {
+      display: flex;
+      gap: 10px;
+    }
+
+    .lookup-form input {
+      flex: 1;
+      min-width: 0;
+      padding: 14px 15px;
+      color: #fff;
+      background: #0b1310;
+      border: 1px solid #354a3e;
+      border-radius: 10px;
+      outline: none;
+    }
+
+    .lookup-form input:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px #77e0a51c;
+    }
+
+    .lookup-form button {
+      padding: 0 22px;
+      color: #092015;
+      background: var(--green);
+      border: 0;
+      border-radius: 10px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: opacity .2s;
+    }
+
+    .lookup-form button:hover { opacity: .88; }
+    .lookup-form button:disabled { opacity: .5; cursor: wait; }
+
+    .recent-wallets {
+  margin-top: 16px;
+  padding: 14px;
+  background: #0b1310;
+  border: 1px solid #354a3e;
+  border-radius: 10px;
+}
+
+.tracking-description {
+  margin: -5px 0 16px;
+  color: #9bb5a6;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.tracked-wallets {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.tracking-empty {
+  margin: 0;
+  padding: 18px;
+  color: #9bb5a6;
+  background: #0b1310;
+  border: 1px dashed #354a3e;
+  border-radius: 10px;
+  font-size: 13px;
+  text-align: center;
+}
+
+.tracked-wallet-card {
+  padding: 16px;
+  background: #0b1310;
+  border: 1px solid #354a3e;
+  border-radius: 10px;
+}
+
+.tracked-wallet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.tracked-wallet-name {
+  color: #e8f5ed;
+  font-size: 15px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.tracked-wallet-status {
+  padding: 5px 9px;
+  border-radius: 6px;
+  background: #26372d;
+  color: #b8c9c0;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.tracked-wallet-status.safe {
+  color: #77e0a5;
+}
+
+.tracked-wallet-status.warning {
+  color: #f2c66d;
+}
+
+.tracked-wallet-status.critical {
+  color: #ff8585;
+}
+
+.tracked-wallet-details {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.tracked-wallet-detail {
+  padding: 10px;
+  background: #111d16;
+  border-radius: 7px;
+}
+
+.tracked-wallet-detail span {
+  display: block;
+  color: #8fa697;
+  font-size: 11px;
+  margin-bottom: 5px;
+}
+
+.tracked-wallet-detail strong {
+  color: #e8f5ed;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.tracked-wallet-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 13px;
+}
+
+.tracked-wallet-actions button {
+  padding: 8px 12px;
+  border: 1px solid #354a3e;
+  border-radius: 7px;
+  background: #17251c;
+  color: #c8d9ce;
+  cursor: pointer;
+}
+
+.tracked-wallet-actions button:disabled {
+  opacity: .5;
+  cursor: wait;
+}
+
+@media (max-width: 600px) {
+  .tracked-wallet-details {
+    grid-template-columns: 1fr;
+  }
+}
+
+.recent-wallets-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: #b8c9c0;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+#clear-recent-wallets {
+  padding: 5px 8px;
+  color: #9bb5a6;
+  background: transparent;
+  border: 1px solid #354a3e;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.recent-wallet-list {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.recent-wallet-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px;
+  background: #17241d;
+  border-radius: 8px;
+}
+
+.recent-wallet-details {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: #fff;
+  font-size: 13px;
+}
+
+.recent-wallet-time {
+  display: block;
+  margin-top: 4px;
+  color: #8fa397;
+  font-size: 11px;
+}
+
+.recent-wallet-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 6px;
+}
+
+.recent-wallet-actions button {
+  padding: 6px 9px;
+  color: #092015;
+  background: var(--green);
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.recent-wallet-actions .remove-wallet {
+  color: #c3d0c8;
+  background: #354a3e;
+}
+
+.message {
+      margin-top: 16px;
+      padding: 13px 15px;
+      border-radius: 9px;
+      color: #b8c9c0;
+      background: #17241d;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .message.error {
+      color: #ffb2b2;
+      background: #351c1c;
+      border: 1px solid #603333;
+    }
+
+    .hidden { display: none !important; }
+
+    .dashboard { margin-top: 26px; }
+
+    .account-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .account-heading h2 {
+      margin: 0;
+      font-size: 20px;
+      overflow-wrap: anywhere;
+    }
+
+    .account-label {
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 11px;
+      border: 1px solid #345443;
+      border-radius: 999px;
+      color: var(--green);
+      background: #173324;
+      font-size: 11px;
+      font-weight: 750;
+    }
+
+    .status.warning {
+      color: var(--yellow);
+      background: #332b18;
+      border-color: #66552d;
+    }
+
+    .status.danger {
+      color: var(--red);
+      background: #351c1c;
+      border-color: #603333;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 13px;
+    }
+
+    .metric {
+      min-width: 0;
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      background: #111a16;
+    }
+
+    .metric.primary {
+      background: linear-gradient(145deg, #173725, #12231a);
+      border-color: #356449;
+    }
+
+    .metric-label {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+
+    .metric-value {
+      font-size: clamp(19px, 2.5vw, 26px);
+      font-weight: 800;
+      letter-spacing: -.035em;
+      overflow-wrap: anywhere;
+    }
+
+    .metric-detail {
+      margin-top: 7px;
+      color: #91a49a;
+      font-size: 11px;
+    }
+
+    .data-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 15px;
+    }
+
+    .data-panel {
+      min-width: 0;
+      padding: 20px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #111a16;
+    }
+
+    .data-panel h3 {
+      margin: 0 0 16px;
+      font-size: 13px;
+      letter-spacing: .08em;
+    }
+
+    .asset-list {
+      display: grid;
+      gap: 0;
+    }
+
+    .asset {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 13px 0;
+      border-top: 1px solid #26352e;
+    }
+
+    .asset:first-child {
+      border-top: 0;
+      padding-top: 0;
+    }
+
+    .asset:last-child { padding-bottom: 0; }
+
+    .asset-name {
+      font-size: 13px;
+      font-weight: 750;
+      overflow-wrap: anywhere;
+    }
+
+    .asset-amount {
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 11px;
+      overflow-wrap: anywhere;
+    }
+
+    .asset-right {
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .asset-value {
+      font-size: 13px;
+      font-weight: 750;
+    }
+
+    .asset-price {
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .liquidation {
+      margin-top: 7px;
+      color: #b8c9c0;
+      font-size: 11px;
+    }
+
+    .empty {
+      padding: 16px;
+      color: var(--muted);
+      background: #152019;
+      border: 1px dashed #35483b;
+      border-radius: 9px;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .margin-note {
+      margin-top: 15px;
+      padding: 15px 17px;
+      border: 1px solid #394334;
+      border-radius: 12px;
+      background: #1d2119;
+    }
+
+    .margin-note strong {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--yellow);
+      font-size: 11px;
+      letter-spacing: .08em;
+    }
+
+    .margin-note p {
+      margin: 0;
+      color: #b8b9a9;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .timestamp {
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .footer {
+      margin-top: 32px;
+      padding-top: 19px;
+      border-top: 1px solid #26352e;
+      color: #82938a;
+      font-size: 11px;
+      line-height: 1.8;
+    }
+
+    .footer strong { color: #b6c9be; }
+/* AI Risk Analyst */
+.ai-section {
+  margin-top: 22px;
+}
+
+.ai-description {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.7;
+  margin: -5px 0 18px;
+}
+
+.ai-result {
+  margin-top: 18px;
+  padding: 20px;
+  border: 1px solid #345443;
+  border-radius: 13px;
+  background: #101a15;
+}
+
+.ai-result h3 {
+  margin: 0 0 10px;
+  color: var(--green);
+  font-size: 13px;
+  letter-spacing: .06em;
+}
+
+.ai-result p,
+.ai-result li {
+  color: #c1d0c7;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.ai-result ul,
+.ai-result ol {
+  padding-left: 22px;
+}
+
+.ai-result li {
+  margin-bottom: 8px;
+}
+
+.ai-result-block {
+  margin-top: 20px;
+}
+
+.ai-disclaimer {
+  margin-top: 18px;
+  padding-top: 13px;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+/* Telegram navigation */
+.telegram-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 15px;
+  border: 1px solid #345443;
+  border-radius: 10px;
+  color: var(--green);
+  background: #173324;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.telegram-link:hover {
+  background: #20452f;
+}
+
+@media (max-width: 600px) {
+  .telegram-link {
+    padding: 8px 10px;
+    font-size: 11px;
+  }
+}
+
+/* Dashboard screen navigation */
+.screen-nav {
+  display: flex;
+  gap: 10px;
+  margin: 24px 0;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #0b1310;
+}
+
+.nav-tab {
+  flex: 1;
+  padding: 12px 10px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.nav-tab.active {
+  color: var(--green);
+  background: #173324;
+  border-color: #345443;
+}
+
+.nav-tab:hover {
+  color: var(--green);
+}
+
+@media (max-width: 600px) {
+  .screen-nav {
+    gap: 5px;
+    padding: 4px;
+  }
+
+  .nav-tab {
+    padding: 11px 5px;
+    font-size: 10px;
+  }
+}
+
+    @media (max-width: 800px) {
+      .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 600px) {
+      .wrap { width: min(100% - 28px, 1120px); padding-top: 22px; }
+      .intro { padding-top: 30px; }
+      .lookup-form { flex-direction: column; }
+      .lookup-form button { min-height: 47px; }
+      .data-grid { grid-template-columns: 1fr; }
+      .panel { padding: 17px; }
+      .metric { padding: 14px; }
+      .readonly { font-size: 9px; }
+    }
+  </style>
+</head>
+
+<body>
+<main class="wrap">
+
+  <header class="topbar">
+    <div class="brand">
+      <img
+  src="/near-sentinel-mascot.jpg"
+  alt="NEAR Sentinel mascot"
+  style="width:42px;height:42px;object-fit:cover;border-radius:50%;display:block;"
+>
+      <span>NEAR Sentinel</span>
+    </div>
+    <div class="readonly">READ-ONLY MONITOR</div>
+<a
+  id="telegram-link"
+  class="telegram-link"
+  href="#"
+  target="_blank"
+  rel="noopener noreferrer"
+  hidden
+>
+  Open Telegram Bot
+</a>
+  </header>
+
+  <section class="intro">
+    <div class="eyebrow">DeFi Risk Intelligence</div>
+    <h1>Lending Risk<br>Monitor</h1>
+    <p>
+      Monitor NEAR lending positions, collateral exposure, debt and
+      estimated liquidation levels using on-chain account data.
+    </p>
+  </section>
+
+      <nav class="screen-nav" aria-label="Dashboard navigation">
+    <button type="button" class="nav-tab active" data-screen="position" aria-selected="true">
+      Position Check
+    </button>
+    <button type="button" class="nav-tab" data-screen="tracking" aria-selected="false">
+      Tracking Dashboard
+    </button>
+    <button type="button" class="nav-tab" data-screen="ai" aria-selected="false">
+      AI Analyst
+    </button>
+  </nav>
+
+  <div id="screen-position" class="app-screen">
+  <section class="panel">
+    <h2 class="section-heading">Check a lending position</h2>
+
+    <form id="lookup" class="lookup-form">
+      <input
+        id="account"
+        autocomplete="off"
+        spellcheck="false"
+        placeholder="Enter a NEAR account, e.g. alice.near"
+        aria-label="NEAR account ID"
+        required
+      >
+      <button type="submit">Analyze position</button>
+    </form>
+
+    <div id="recent-wallets" class="recent-wallets hidden">
+      <div class="recent-wallets-heading">
+        <span>Recently checked</span>
+        <button type="button" id="clear-recent-wallets">Clear history</button>
+      </div>
+      <ul id="recent-wallet-list" class="recent-wallet-list"></ul>
+    </div>
+
+    <div id="message" class="message hidden" aria-live="polite"></div>
+  </section>
+
+    </div>
+
+  <div id="screen-tracking" class="app-screen hidden">
+  <section class="panel tracking-panel" id="tracking-panel">
+    <h2 class="section-heading">Wallet Tracking Dashboard</h2>
+    <p class="tracking-description">
+      Keep multiple RHEA Lend positions together and refresh their risk data.
+    </p>
+
+    <form id="tracking-form" class="lookup-form">
+      <input
+        id="tracking-account"
+        type="text"
+        placeholder="Enter a NEAR account ID to track"
+        autocomplete="off"
+        spellcheck="false"
+        aria-label="NEAR account ID to track"
+        required
+      >
+      <button type="submit">Add wallet</button>
+    </form>
+
+    <div id="tracking-message" class="message hidden" aria-live="polite"></div>
+
+    <div id="tracked-wallets" class="tracked-wallets">
+      <p class="tracking-empty">
+        No tracked wallets yet. Add a NEAR account to get started.
+      </p>
+    </div>
+  </section>
+
+    </div>
+
+  <div id="screen-position-results" class="app-screen" data-screen-panel="position">
+  <section id="dashboard" class="dashboard hidden" aria-live="polite">
+    <div class="account-heading">
+      <div>
+        <div class="account-label">Account being monitored</div>
+        <h2 id="account-name">—</h2>
+      </div>
+      <div id="risk-status" class="status">Position loaded</div>
+    </div>
+
+    <div class="metrics">
+      <article class="metric primary">
+        <div class="metric-label">Health factor</div>
+        <div class="metric-value" id="health-factor">—</div>
+        <div class="metric-detail" id="health-detail">—</div>
+      </article>
+
+      <article class="metric">
+        <div class="metric-label">Collateral value</div>
+        <div class="metric-value" id="collateral-value">—</div>
+        <div class="metric-detail">Market value in USD</div>
+      </article>
+
+      <article class="metric">
+        <div class="metric-label">Debt value</div>
+        <div class="metric-value" id="debt-value">—</div>
+        <div class="metric-detail">Market value in USD</div>
+      </article>
+
+      <article class="metric">
+        <div class="metric-label">Adjusted collateral</div>
+        <div class="metric-value" id="adjusted-collateral">—</div>
+        <div class="metric-detail" id="adjusted-debt-detail">Adjusted debt: —</div>
+      </article>
+    </div>
+
+    <div class="data-grid">
+      <section class="data-panel">
+        <h3>COLLATERAL</h3>
+        <div id="collateral-list" class="asset-list"></div>
+      </section>
+
+      <section class="data-panel">
+        <h3>DEBT</h3>
+        <div id="debt-list" class="asset-list"></div>
+      </section>
+    </div>
+
+    <div class="margin-note">
+      <strong>MARGIN TRADING: NOT INTEGRATED</strong>
+      <p id="margin-reason">
+        Margin trading is not integrated into this risk calculation.
+      </p>
+    </div>
+
+    <div class="timestamp" id="timestamp"></div>
+  </section>
+
+  </div>
+
+  <div id="screen-ai" class="app-screen hidden">
+<section class="panel ai-section" id="ai-analyst">
+  <div class="panel-header">
+    <div>
+      <span class="eyebrow">AI-POWERED INTELLIGENCE</span>
+      <h2>AI Risk Analyst</h2>
+    </div>
+    <span class="status-badge">NEAR AI</span>
+  </div>
+
+  <p class="ai-description">
+    Go beyond health-factor monitoring. Get an AI-generated assessment
+    of a NEAR lending position, including risk factors, data quality
+    and recommended actions.
+  </p>
+
+  <form id="ai-form" class="lookup-form">
+    <input
+      id="ai-account"
+      type="text"
+      placeholder="Enter a NEAR account ID"
+      autocomplete="off"
+      required
+    />
+    <button type="submit" id="ai-button">Run AI Analysis</button>
+  </form>
+
+  <div id="ai-message" role="status" aria-live="polite"></div>
+  <div id="ai-output" class="ai-result" hidden></div>
+
+  <p class="ai-disclaimer">
+    AI analysis is interpretive and may be imperfect. Risk calculations
+    come from the deterministic monitoring engine. This tool is
+    read-only and does not execute transactions or provide financial advice.
+  </p>
+</section>
+
+  </div>
+
+  <footer class="footer">
+    <strong>NEAR Sentinel</strong> · Independent DeFi risk intelligence.<br>
+    Not financial advice. Data may lag or be unavailable.<br>
+    Read-only monitoring: no wallet connection, private keys,
+    signatures or transactions are required.
+  </footer>
+
+</main>
+
+<script>
+const form = document.getElementById('lookup');
+const button = form.querySelector('button');
+const message = document.getElementById('message');
+const dashboard = document.getElementById('dashboard');
+
+const recentWalletsKey = 'near-sentinel-recent-wallets';
+const recentWalletsBox = document.getElementById('recent-wallets');
+const recentWalletList = document.getElementById('recent-wallet-list');
+const clearRecentWalletsButton = document.getElementById('clear-recent-wallets');
+
+function getRecentWallets() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(recentWalletsKey) || '[]');
+    return Array.isArray(saved) ? saved : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveRecentWallet(accountId) {
+  const wallets = getRecentWallets().filter(
+    item => item.accountId.toLowerCase() !== accountId.toLowerCase()
+  );
+
+  wallets.unshift({
+    accountId,
+    checkedAt: new Date().toISOString()
+  });
+
+  try {
+    localStorage.setItem(recentWalletsKey, JSON.stringify(wallets.slice(0, 5)));
+  } catch {
+    // Continue without browser history if storage is unavailable.
+  }
+
+  renderRecentWallets();
+}
+
+function renderRecentWallets() {
+  const wallets = getRecentWallets();
+  recentWalletList.replaceChildren();
+  recentWalletsBox.classList.toggle('hidden', wallets.length === 0);
+
+  wallets.forEach(wallet => {
+    const item = document.createElement('li');
+    item.className = 'recent-wallet-item';
+
+    const details = document.createElement('div');
+    details.className = 'recent-wallet-details';
+    details.textContent = wallet.accountId;
+
+    const time = document.createElement('span');
+    time.className = 'recent-wallet-time';
+
+    const checkedDate = new Date(wallet.checkedAt);
+    time.textContent = Number.isNaN(checkedDate.getTime())
+      ? 'Previously checked'
+      : 'Last checked: ' + checkedDate.toLocaleString();
+
+    details.appendChild(time);
+
+    const actions = document.createElement('div');
+    actions.className = 'recent-wallet-actions';
+
+    const viewButton = document.createElement('button');
+    viewButton.type = 'button';
+    viewButton.textContent = 'View';
+    viewButton.addEventListener('click', () => {
+      document.getElementById('account').value = wallet.accountId;
+      form.requestSubmit();
+    });
+
+    const removeButton = document.createElement('button');
+    removeButton.type = 'button';
+    removeButton.className = 'remove-wallet';
+    removeButton.textContent = 'Remove';
+    removeButton.addEventListener('click', () => {
+      const remaining = getRecentWallets().filter(
+        entry => entry.accountId.toLowerCase() !== wallet.accountId.toLowerCase()
+      );
+      localStorage.setItem(recentWalletsKey, JSON.stringify(remaining));
+      renderRecentWallets();
+    });
+
+    actions.append(viewButton, removeButton);
+    item.append(details, actions);
+    recentWalletList.appendChild(item);
+  });
+}
+
+clearRecentWalletsButton.addEventListener('click', () => {
+  localStorage.removeItem(recentWalletsKey);
+  renderRecentWallets();
+});
+
+renderRecentWallets();
+
+function money(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return 'Unavailable';
+
+  return new Intl.NumberFormat(undefined, {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(n);
+}
+
+function amount(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return 'Unavailable';
+
+  const digits = Math.abs(n) >= 1 ? 4 :
+    Math.abs(n) >= 0.0001 ? 6 : 10;
+
+  return new Intl.NumberFormat(undefined, {
+    maximumFractionDigits: digits
+  }).format(n);
+}
+
+function price(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return 'Unavailable';
+
+  return new Intl.NumberFormat(undefined, {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: Math.abs(n) < 0.01 ? 6 : 4
+  }).format(n);
+}
+
+function percentage(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return 'Unavailable';
+
+  return `${n > 0 ? '+' : ''}${n.toFixed(2)}%`;
+}
+
+function setText(id, value) {
+  document.getElementById(id).textContent = value;
+}
+
+function showMessage(text, isError = false) {
+  message.textContent = text;
+  message.classList.remove('hidden', 'error');
+  if (isError) message.classList.add('error');
+}
+
+function setRiskStatus(data) {
+  const element = document.getElementById('risk-status');
+  element.className = 'status';
+
+  if (data.healthFactor === null || data.healthFactor === undefined) {
+    element.textContent = 'No outstanding debt';
+    return;
+  }
+
+  const hf = Number(data.healthFactor);
+
+  if (!Number.isFinite(hf)) {
+    element.textContent = 'Risk status unavailable';
+    element.classList.add('warning');
+  } else if (hf < 1) {
+    element.textContent = 'Below liquidation threshold';
+    element.classList.add('danger');
+  } else {
+    element.textContent = 'Above liquidation threshold';
+  }
+}
+
+function renderAssets(containerId, assets, side, hasDebt) {
+  const container = document.getElementById(containerId);
+  container.replaceChildren();
+
+  if (!Array.isArray(assets) || assets.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'empty';
+    empty.textContent = side === 'collateral'
+      ? 'No active collateral found for this account.'
+      : 'No outstanding borrowed assets. This account currently has no recorded debt.';
+    container.appendChild(empty);
+    return;
+  }
+
+  for (const asset of assets) {
+    const row = document.createElement('div');
+    row.className = 'asset';
+
+    const left = document.createElement('div');
+    const name = document.createElement('div');
+    name.className = 'asset-name';
+    name.textContent = asset.symbol || asset.tokenId || 'Unknown asset';
+
+    const quantity = document.createElement('div');
+    quantity.className = 'asset-amount';
+    quantity.textContent = `${amount(asset.amount)} tokens`;
+
+    left.append(name, quantity);
+
+    const right = document.createElement('div');
+    right.className = 'asset-right';
+
+    const value = document.createElement('div');
+    value.className = 'asset-value';
+    value.textContent = money(Number(asset.amount) * Number(asset.priceUsd));
+
+    const unitPrice = document.createElement('div');
+    unitPrice.className = 'asset-price';
+    unitPrice.textContent = `Price: ${price(asset.priceUsd)}`;
+
+    right.append(value, unitPrice);
+
+    if (side === 'collateral') {
+      const liquidation = document.createElement('div');
+      liquidation.className = 'liquidation';
+
+      if (!hasDebt) {
+        liquidation.textContent = 'Liquidation estimate unavailable · no debt';
+      } else if (Number.isFinite(Number(asset.liquidationPriceUsd)) &&
+                 asset.liquidationPriceUsd !== undefined) {
+        liquidation.textContent =
+          `Est. liquidation: ${price(asset.liquidationPriceUsd)} · ${percentage(asset.liquidationMovePct)}`;
+      } else {
+        liquidation.textContent = 'Liquidation estimate unavailable';
+      }
+
+      right.appendChild(liquidation);
+    }
+
+    row.append(left, right);
+    container.appendChild(row);
+  }
+}
+
+function render(data) {
+  dashboard.classList.remove('hidden');
+  message.classList.add('hidden');
+
+  setText('account-name', data.accountId || 'Unknown account');
+
+  const noDebt = data.healthFactor === null ||
+                 data.healthFactor === undefined;
+
+  if (noDebt) {
+    setText('health-factor', 'N/A');
+    setText('health-detail', 'No outstanding debt');
+  } else {
+    const hf = Number(data.healthFactor);
+    setText('health-factor', Number.isFinite(hf) ? `${hf.toFixed(2)}×` : 'Unavailable');
+    setText('health-detail', Number.isFinite(hf)
+      ? `${(hf * 100).toFixed(2)}% adjusted collateral / debt`
+      : 'Unable to determine health factor');
+  }
+
+  setText('collateral-value', money(data.collateralUsd));
+  setText('debt-value', money(data.debtUsd));
+  setText('adjusted-collateral', money(data.adjustedCollateralUsd));
+  setText('adjusted-debt-detail', `Adjusted debt: ${money(data.adjustedDebtUsd)}`);
+
+  setRiskStatus(data);
+
+  renderAssets('collateral-list', data.collateral, 'collateral', !noDebt);
+  renderAssets('debt-list', data.debt, 'debt', !noDebt);
+
+  setText(
+    'margin-reason',
+    data.margin?.reason ||
+    'Margin trading is not integrated into this risk calculation.'
+  );
+
+  const timestamp = Number(data.priceTimestamp);
+  setText(
+    'timestamp',
+    Number.isFinite(timestamp) && timestamp > 0
+      ? `Price data timestamp: ${new Date(timestamp * 1000).toLocaleString()}`
+      : 'Price data timestamp unavailable.'
+  );
+}
+
+form.addEventListener('submit', async event => {
+  event.preventDefault();
+
+  const accountId = document.getElementById('account').value.trim();
+  if (!accountId) return;
+
+  button.disabled = true;
+  button.textContent = 'Analyzing…';
+  dashboard.classList.add('hidden');
+  showMessage('Retrieving account data and calculating lending risk…');
+
+  try {
+    const response = await fetch('/api/status', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ accountId })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Unable to retrieve this position.');
+    }
+
+    saveRecentWallet(data.accountId || accountId);
+    render(data);
+  } catch (error) {
+    dashboard.classList.add('hidden');
+    showMessage(
+      error instanceof Error ? error.message : 'An unexpected error occurred.',
+      true
+    );
+  } finally {
+    button.disabled = false;
+    button.textContent = 'Analyze position';
+  }
+});
+
+// Load the official Telegram bot link
+fetch('/api/config')
+  .then(response => {
+    if (!response.ok) throw new Error('Configuration unavailable');
+    return response.json();
+  })
+  .then(config => {
+    const link = document.getElementById('telegram-link');
+
+    if (config.telegramBotUrl) {
+      link.href = config.telegramBotUrl;
+      link.hidden = false;
+    }
+  })
+  .catch(error => console.error('Telegram link unavailable:', error));
+
+// NEAR Sentinel AI Risk Analyst
+const aiForm = document.getElementById('ai-form');
+const aiAccount = document.getElementById('ai-account');
+const aiButton = document.getElementById('ai-button');
+const aiMessage = document.getElementById('ai-message');
+const aiOutput = document.getElementById('ai-output');
+
+function addAISection(title, content) {
+  if (content === undefined || content === null || content === '') return;
+
+  const section = document.createElement('div');
+  section.className = 'ai-result-block';
+
+  const heading = document.createElement('h3');
+  heading.textContent = title;
+  section.appendChild(heading);
+
+  if (Array.isArray(content)) {
+    const list = document.createElement('ul');
+
+    content.forEach(item => {
+      const li = document.createElement('li');
+      li.textContent = typeof item === 'string'
+        ? item
+        : item.text ?? item.description ?? JSON.stringify(item);
+      list.appendChild(li);
+    });
+
+    section.appendChild(list);
+  } else {
+    const paragraph = document.createElement('p');
+    paragraph.textContent = typeof content === 'string'
+      ? content
+      : JSON.stringify(content, null, 2);
+    section.appendChild(paragraph);
+  }
+
+  aiOutput.appendChild(section);
+}
+
+aiForm.addEventListener('submit', async event => {
+  event.preventDefault();
+
+  const accountId = aiAccount.value.trim().toLowerCase();
+
+  aiButton.disabled = true;
+  aiButton.textContent = 'Analyzing...';
+  aiMessage.textContent = 'Fetching verified position data and running AI analysis...';
+  aiOutput.hidden = true;
+  aiOutput.replaceChildren();
+
+  try {
+    const response = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ accountId })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || 'AI analysis could not be completed.');
+    }
+
+    const analysis = result.analysis;
+
+    const heading = document.createElement('h2');
+    heading.textContent = `AI assessment: ${result.accountId}`;
+    aiOutput.appendChild(heading);
+
+    addAISection('SUMMARY', analysis.summary);
+    addAISection('KEY FINDINGS', analysis.findings ?? analysis.keyFindings);
+    addAISection(
+      'RECOMMENDED ACTIONS',
+      analysis.recommendedActions ?? analysis.actions
+    );
+    addAISection('DATA QUALITY', analysis.dataQuality);
+
+    aiOutput.hidden = false;
+    aiMessage.textContent = 'AI analysis completed.';
+  } catch (error) {
+    aiMessage.textContent = error.message || 'Something went wrong.';
+  } finally {
+    aiButton.disabled = false;
+    aiButton.textContent = 'Run AI Analysis';
+  }
+});
+
+// NEAR Sentinel multi-wallet tracking
+const trackingKey = 'near-sentinel-tracked-wallets';
+const trackingForm = document.getElementById('tracking-form');
+const trackingInput = document.getElementById('tracking-account');
+const trackingMessage = document.getElementById('tracking-message');
+const trackedWalletsContainer = document.getElementById('tracked-wallets');
+
+function getTrackedWallets() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(trackingKey) || '[]');
+    return Array.isArray(saved) ? saved.slice(0, 5) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveTrackedWallets(wallets) {
+  localStorage.setItem(trackingKey, JSON.stringify(wallets.slice(0, 5)));
+}
+
+function trackingMoney(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return 'Unavailable';
+
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 2
+  }).format(number);
+}
+
+function trackingRisk(data) {
+  if (data.healthFactor === null || data.healthFactor === undefined) {
+    return { label: 'No outstanding debt', className: 'safe' };
+  }
+
+  const hf = Number(data.healthFactor);
+
+  if (!Number.isFinite(hf)) {
+    return { label: 'Risk unavailable', className: '' };
+  }
+
+  if (hf < 1) {
+    return { label: 'Below liquidation threshold', className: 'critical' };
+  }
+
+  return { label: 'Above liquidation threshold', className: '' };
+}
+
+function renderTrackedWallets() {
+  const wallets = getTrackedWallets();
+  trackedWalletsContainer.replaceChildren();
+
+  if (wallets.length === 0) {
+    const empty = document.createElement('p');
+    empty.className = 'tracking-empty';
+    empty.textContent = 'No tracked wallets yet. Add a NEAR account to get started.';
+    trackedWalletsContainer.appendChild(empty);
+    return;
+  }
+
+  wallets.forEach(wallet => {
+    const card = document.createElement('article');
+    card.className = 'tracked-wallet-card';
+
+    const header = document.createElement('div');
+    header.className = 'tracked-wallet-header';
+
+    const name = document.createElement('div');
+    name.className = 'tracked-wallet-name';
+    name.textContent = wallet.accountId;
+
+    const status = document.createElement('span');
+    status.className = 'tracked-wallet-status';
+
+    const details = document.createElement('div');
+    details.className = 'tracked-wallet-details';
+
+    function addDetail(label, value) {
+      const item = document.createElement('div');
+      item.className = 'tracked-wallet-detail';
+
+      const caption = document.createElement('span');
+      caption.textContent = label;
+
+      const strong = document.createElement('strong');
+      strong.textContent = value;
+
+      item.append(caption, strong);
+      details.appendChild(item);
+    }
+
+    if (wallet.data) {
+      const risk = trackingRisk(wallet.data);
+      status.textContent = risk.label;
+      if (risk.className) status.classList.add(risk.className);
+
+      const hf = wallet.data.healthFactor;
+      addDetail(
+        'Health factor',
+        hf === null || hf === undefined
+          ? 'N/A'
+          : Number.isFinite(Number(hf))
+            ? `${Number(hf).toFixed(2)}x`
+            : 'Unavailable'
+      );
+
+      addDetail('Collateral', trackingMoney(wallet.data.collateralUsd));
+      addDetail('Debt', trackingMoney(wallet.data.debtUsd));
+    } else {
+      status.textContent = 'Awaiting data';
+      addDetail('Health factor', 'Not loaded');
+      addDetail('Collateral', 'Not loaded');
+      addDetail('Debt', 'Not loaded');
+    }
+
+    const actions = document.createElement('div');
+    actions.className = 'tracked-wallet-actions';
+
+    const refresh = document.createElement('button');
+    refresh.type = 'button';
+    refresh.textContent = 'Refresh';
+
+    refresh.addEventListener('click', async () => {
+      refresh.disabled = true;
+      refresh.textContent = 'Refreshing...';
+
+      try {
+        await refreshTrackedWallet(wallet.accountId);
+      } finally {
+        refresh.disabled = false;
+        refresh.textContent = 'Refresh';
+      }
+    });
+
+    const remove = document.createElement('button');
+    remove.type = 'button';
+    remove.textContent = 'Remove';
+
+    remove.addEventListener('click', () => {
+      const updated = getTrackedWallets().filter(
+        item => item.accountId !== wallet.accountId
+      );
+      saveTrackedWallets(updated);
+      renderTrackedWallets();
+    });
+
+    actions.append(refresh, remove);
+    header.append(name, status);
+    card.append(header, details, actions);
+
+    if (wallet.updatedAt) {
+      const timestamp = document.createElement('p');
+      timestamp.className = 'tracking-description';
+      timestamp.textContent =
+        `Last updated: ${new Date(wallet.updatedAt).toLocaleString()}`;
+      card.appendChild(timestamp);
+    }
+
+    trackedWalletsContainer.appendChild(card);
+  });
+}
+
+async function refreshTrackedWallet(accountId) {
+  try {
+    const response = await fetch('/api/status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ accountId })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Could not refresh wallet.');
+    }
+
+    const wallets = getTrackedWallets();
+    const index = wallets.findIndex(
+      item => item.accountId === accountId
+    );
+
+    if (index === -1) return;
+
+    wallets[index] = {
+      accountId: data.accountId || accountId,
+      data,
+      updatedAt: Date.now()
+    };
+
+    saveTrackedWallets(wallets);
+    renderTrackedWallets();
+
+    trackingMessage.classList.add('hidden');
+  } catch (error) {
+    trackingMessage.textContent =
+      error instanceof Error ? error.message : 'Wallet refresh failed.';
+    trackingMessage.classList.remove('hidden');
+    throw error;
+  }
+}
+
+trackingForm.addEventListener('submit', async event => {
+  event.preventDefault();
+
+  const accountId = trackingInput.value.trim().toLowerCase();
+  if (!accountId) return;
+
+  const wallets = getTrackedWallets();
+
+  if (wallets.some(wallet => wallet.accountId === accountId)) {
+    trackingMessage.textContent = 'This wallet is already being tracked.';
+    trackingMessage.classList.remove('hidden');
+    return;
+  }
+
+  if (wallets.length >= 5) {
+    trackingMessage.textContent = 'You can track up to 5 wallets.';
+    trackingMessage.classList.remove('hidden');
+    return;
+  }
+
+  const submitButton = trackingForm.querySelector('button');
+  submitButton.disabled = true;
+  submitButton.textContent = 'Adding...';
+
+  try {
+    const response = await fetch('/api/status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ accountId })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Could not add this wallet.');
+    }
+
+    wallets.push({
+      accountId: data.accountId || accountId,
+      data,
+      updatedAt: Date.now()
+    });
+
+    saveTrackedWallets(wallets);
+    trackingInput.value = '';
+    trackingMessage.classList.add('hidden');
+    renderTrackedWallets();
+  } catch (error) {
+    trackingMessage.textContent =
+      error instanceof Error ? error.message : 'Could not add this wallet.';
+    trackingMessage.classList.remove('hidden');
+  } finally {
+    submitButton.disabled = false;
+    submitButton.textContent = 'Add wallet';
+  }
+});
+
+renderTrackedWallets();
+
+// Dashboard screen navigation
+const navTabs = document.querySelectorAll('.nav-tab');
+
+const screenPanels = {
+  position: document.getElementById('screen-position'),
+  tracking: document.getElementById('screen-tracking'),
+  ai: document.getElementById('screen-ai')
+};
+
+const positionResults = document.getElementById('screen-position-results');
+
+navTabs.forEach((tab) => {
+  tab.addEventListener('click', () => {
+    const selectedScreen = tab.dataset.screen;
+
+    Object.entries(screenPanels).forEach(([name, panel]) => {
+      panel.classList.toggle('hidden', name !== selectedScreen);
+    });
+
+    positionResults.classList.toggle('hidden', selectedScreen !== 'position');
+
+    navTabs.forEach((button) => {
+      const isActive = button === tab;
+      button.classList.toggle('active', isActive);
+      button.setAttribute('aria-selected', String(isActive));
+    });
+  });
+});
+
+</script>
+</body>
+</html>

@@ -1,980 +1,543 @@
 
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0b1110">
-  <title>NEAR Sentinel | Lending Risk Monitor</title>
-
+  <meta name="description" content="NEAR Sentinel is an AI-powered DeFi risk intelligence and early-warning platform for the NEAR ecosystem.">
+  <title>NEAR Sentinel | DeFi Risk Intelligence</title>
+  <link rel="icon" href="/near-sentinel-mascot.jpg">
   <style>
     :root {
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
-      color: #edf4f0;
-      background: #0b1110;
-      font-synthesis: none;
       --bg: #0b1110;
       --panel: #111b18;
-      --panel-soft: #15221d;
-      --border: #263a31;
-      --muted: #91a49a;
+      --panel2: #15221d;
       --green: #77e0a5;
-      --green-dark: #173c2b;
-      --red: #ff8585;
-      --yellow: #f2ce78;
+      --text: #f1f7f3;
+      --muted: #9aada2;
+      --border: #263a31;
     }
 
-    * { box-sizing: border-box; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
 
     body {
-      margin: 0;
-      min-height: 100vh;
-      background:
-        radial-gradient(ellipse at 85% 0%, #16402c 0, transparent 35%),
-        radial-gradient(ellipse at 0% 45%, #13251d 0, transparent 35%),
-        var(--bg);
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, Arial, sans-serif;
+      line-height: 1.65;
     }
 
-    button, input { font: inherit; }
+    a { color: inherit; text-decoration: none; }
 
-    .wrap {
-      width: min(1120px, calc(100% - 40px));
-      margin: 0 auto;
-      padding: 38px 0 48px;
+    .container {
+      width: min(1120px, 90%);
+      margin: auto;
     }
 
-    .topbar {
+    header {
+      border-bottom: 1px solid var(--border);
+      background: rgba(11,17,16,.94);
+    }
+
+    nav {
+      min-height: 76px;
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      gap: 16px;
-      padding-bottom: 28px;
-      border-bottom: 1px solid #26352e;
+      align-items: center;
+      gap: 20px;
     }
 
     .brand {
       display: flex;
       align-items: center;
       gap: 11px;
-      color: var(--green);
-      font-size: 13px;
+      font-size: 17px;
       font-weight: 800;
-      letter-spacing: .13em;
-      text-transform: uppercase;
+      letter-spacing: 1px;
     }
 
-    .brand-mark {
-      display: grid;
-      place-items: center;
-      width: 34px;
-      height: 34px;
-      border: 1px solid #477b5d;
+    .brand img {
+      width: 42px;
+      height: 42px;
+      object-fit: contain;
       border-radius: 10px;
-      background: #153324;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 26px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .nav-links a:hover { color: var(--green); }
+
+    .button {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      gap: 9px;
+      padding: 13px 22px;
+      border-radius: 9px;
+      background: var(--green);
+      color: #10251a;
+      font-weight: 800;
+      transition: .2s;
+    }
+
+    .button:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.08);
+    }
+
+    .button-outline {
+      background: transparent;
+      color: var(--green);
+      border: 1px solid var(--green);
+    }
+
+    .hero {
+      padding: 105px 0 95px;
+      text-align: center;
+      background:
+        radial-gradient(ellipse at 50% 15%, rgba(53,145,91,.19), transparent 55%),
+        var(--bg);
+    }
+
+    .eyebrow {
+      display: inline-block;
+      padding: 6px 13px;
+      border: 1px solid #315b43;
+      border-radius: 30px;
+      color: var(--green);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 1.4px;
+      margin-bottom: 24px;
+    }
+
+    .hero h1 {
+      max-width: 850px;
+      margin: auto;
+      font-size: clamp(39px, 7vw, 70px);
+      line-height: 1.08;
+      letter-spacing: -2px;
+    }
+
+    .hero h1 span { color: var(--green); }
+
+    .hero p {
+      max-width: 680px;
+      margin: 25px auto 32px;
+      color: var(--muted);
       font-size: 17px;
     }
 
-    .readonly {
-      color: #a7c4b3;
-      border: 1px solid #345443;
-      border-radius: 999px;
-      padding: 7px 11px;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: .06em;
-    }
-
-    .intro { padding: 38px 0 24px; }
-
-    .eyebrow {
-      color: var(--green);
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: .15em;
-      text-transform: uppercase;
-    }
-
-    h1 {
-      margin: 10px 0;
-      font-size: clamp(34px, 6vw, 54px);
-      line-height: 1.04;
-      letter-spacing: -.045em;
-    }
-
-    .intro p {
-      max-width: 650px;
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.7;
-      font-size: 15px;
-    }
-
-    .panel {
-      padding: 22px;
-      border: 1px solid var(--border);
-      border-radius: 17px;
-      background: linear-gradient(145deg, #14221b, #101815);
-      box-shadow: 0 18px 60px #0003;
-    }
-
-    .section-heading {
-      margin: 0 0 15px;
-      font-size: 14px;
-      font-weight: 750;
-    }
-
-    .lookup-form {
+    .hero-actions {
       display: flex;
-      gap: 10px;
-    }
-
-    .lookup-form input {
-      flex: 1;
-      min-width: 0;
-      padding: 14px 15px;
-      color: #fff;
-      background: #0b1310;
-      border: 1px solid #354a3e;
-      border-radius: 10px;
-      outline: none;
-    }
-
-    .lookup-form input:focus {
-      border-color: var(--green);
-      box-shadow: 0 0 0 3px #77e0a51c;
-    }
-
-    .lookup-form button {
-      padding: 0 22px;
-      color: #092015;
-      background: var(--green);
-      border: 0;
-      border-radius: 10px;
-      font-weight: 800;
-      cursor: pointer;
-      transition: opacity .2s;
-    }
-
-    .lookup-form button:hover { opacity: .88; }
-    .lookup-form button:disabled { opacity: .5; cursor: wait; }
-
-    .message {
-      margin-top: 16px;
-      padding: 13px 15px;
-      border-radius: 9px;
-      color: #b8c9c0;
-      background: #17241d;
-      font-size: 13px;
-      line-height: 1.5;
-    }
-
-    .message.error {
-      color: #ffb2b2;
-      background: #351c1c;
-      border: 1px solid #603333;
-    }
-
-    .hidden { display: none !important; }
-
-    .dashboard { margin-top: 26px; }
-
-    .account-heading {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      justify-content: center;
       flex-wrap: wrap;
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-
-    .account-heading h2 {
-      margin: 0;
-      font-size: 20px;
-      overflow-wrap: anywhere;
-    }
-
-    .account-label {
-      color: var(--muted);
-      font-size: 11px;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-      margin-bottom: 5px;
-    }
-
-    .status {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      padding: 7px 11px;
-      border: 1px solid #345443;
-      border-radius: 999px;
-      color: var(--green);
-      background: #173324;
-      font-size: 11px;
-      font-weight: 750;
-    }
-
-    .status.warning {
-      color: var(--yellow);
-      background: #332b18;
-      border-color: #66552d;
-    }
-
-    .status.danger {
-      color: var(--red);
-      background: #351c1c;
-      border-color: #603333;
-    }
-
-    .metrics {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 13px;
     }
 
-    .metric {
-      min-width: 0;
-      padding: 18px;
-      border: 1px solid var(--border);
-      border-radius: 13px;
-      background: #111a16;
-    }
-
-    .metric.primary {
-      background: linear-gradient(145deg, #173725, #12231a);
-      border-color: #356449;
-    }
-
-    .metric-label {
+    .hero-note {
+      display: block;
+      margin-top: 19px;
       color: var(--muted);
       font-size: 12px;
+    }
+
+    .mascot {
+      width: 115px;
+      height: 115px;
+      object-fit: contain;
+      margin: 0 auto 24px;
+      border-radius: 25px;
+    }
+
+    section { padding: 80px 0; }
+
+    .section-heading {
+      text-align: center;
+      max-width: 700px;
+      margin: 0 auto 43px;
+    }
+
+    .section-heading h2 {
+      font-size: clamp(27px, 4vw, 39px);
+      line-height: 1.2;
+      margin-bottom: 13px;
+    }
+
+    .section-heading p { color: var(--muted); }
+
+    .cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 18px;
+}
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      padding: 25px;
+    }
+
+    .card-icon {
+      width: 45px;
+      height: 45px;
+      display: grid;
+      place-items: center;
+      background: #1c3828;
+      border-radius: 12px;
+      color: var(--green);
+      font-size: 21px;
+      margin-bottom: 18px;
+    }
+
+    .card h3 { margin-bottom: 9px; font-size: 18px; }
+
+    .card p { color: var(--muted); font-size: 14px; }
+
+    .about {
+      background: #0e1713;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 50px;
+      align-items: center;
+    }
+
+    .about h2 {
+      font-size: clamp(28px, 4vw, 40px);
+      line-height: 1.2;
+      margin-bottom: 20px;
+    }
+
+    .about p {
+      color: var(--muted);
+      margin-bottom: 15px;
+    }
+
+    .steps {
+      display: grid;
+      gap: 14px;
+    }
+
+    .step {
+      padding: 17px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    .step strong { color: var(--green); }
+
+    .step p {
+      margin: 5px 0 0;
+      font-size: 13px;
+    }
+
+    .roadmap {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 17px;
+    }
+
+    .roadmap .card { padding: 23px; }
+
+    .status {
+      display: inline-block;
+      color: var(--green);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1px;
       margin-bottom: 12px;
     }
 
-    .metric-value {
-      font-size: clamp(19px, 2.5vw, 26px);
-      font-weight: 800;
-      letter-spacing: -.035em;
-      overflow-wrap: anywhere;
+    .status.future { color: #b7c3bc; }
+
+    .launch {
+      text-align: center;
+      background:
+        radial-gradient(ellipse at center, rgba(53,145,91,.17), transparent 65%);
     }
 
-    .metric-detail {
-      margin-top: 7px;
-      color: #91a49a;
-      font-size: 11px;
+    .launch h2 {
+      font-size: clamp(30px, 5vw, 46px);
+      margin-bottom: 15px;
     }
 
-    .data-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-      margin-top: 15px;
+    .launch p {
+      color: var(--muted);
+      max-width: 600px;
+      margin: 0 auto 27px;
     }
 
-    .data-panel {
-      min-width: 0;
-      padding: 20px;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      background: #111a16;
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 27px 0;
+      color: var(--muted);
+      font-size: 12px;
     }
 
-    .data-panel h3 {
-      margin: 0 0 16px;
-      font-size: 13px;
-      letter-spacing: .08em;
-    }
-
-    .asset-list {
-      display: grid;
-      gap: 0;
-    }
-
-    .asset {
+    .footer-inner {
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
-      gap: 14px;
-      padding: 13px 0;
-      border-top: 1px solid #26352e;
+      flex-wrap: wrap;
+      gap: 15px;
     }
 
-    .asset:first-child {
-      border-top: 0;
-      padding-top: 0;
-    }
-
-    .asset:last-child { padding-bottom: 0; }
-
-    .asset-name {
-      font-size: 13px;
-      font-weight: 750;
-      overflow-wrap: anywhere;
-    }
-
-    .asset-amount {
-      margin-top: 5px;
-      color: var(--muted);
-      font-size: 11px;
-      overflow-wrap: anywhere;
-    }
-
-    .asset-right {
-      text-align: right;
-      flex-shrink: 0;
-    }
-
-    .asset-value {
-      font-size: 13px;
-      font-weight: 750;
-    }
-
-    .asset-price {
-      margin-top: 5px;
-      color: var(--muted);
-      font-size: 11px;
-    }
-
-    .liquidation {
-      margin-top: 7px;
-      color: #b8c9c0;
-      font-size: 11px;
-    }
-
-    .empty {
-      padding: 16px;
-      color: var(--muted);
-      background: #152019;
-      border: 1px dashed #35483b;
-      border-radius: 9px;
-      font-size: 12px;
-      line-height: 1.6;
-    }
-
-    .margin-note {
-      margin-top: 15px;
-      padding: 15px 17px;
-      border: 1px solid #394334;
-      border-radius: 12px;
-      background: #1d2119;
-    }
-
-    .margin-note strong {
-      display: block;
-      margin-bottom: 5px;
-      color: var(--yellow);
-      font-size: 11px;
-      letter-spacing: .08em;
-    }
-
-    .margin-note p {
-      margin: 0;
-      color: #b8b9a9;
-      font-size: 12px;
-      line-height: 1.6;
-    }
-
-    .timestamp {
-      margin-top: 16px;
-      color: var(--muted);
-      font-size: 11px;
-    }
-
-    .footer {
-      margin-top: 32px;
-      padding-top: 19px;
-      border-top: 1px solid #26352e;
-      color: #82938a;
-      font-size: 11px;
-      line-height: 1.8;
-    }
-
-    .footer strong { color: #b6c9be; }
-/* AI Risk Analyst */
-.ai-section {
-  margin-top: 22px;
+    @media (max-width: 760px) {
+      .nav-links {
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
-.ai-description {
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.7;
-  margin: -5px 0 18px;
-}
-
-.ai-result {
-  margin-top: 18px;
-  padding: 20px;
-  border: 1px solid #345443;
-  border-radius: 13px;
-  background: #101a15;
-}
-
-.ai-result h3 {
-  margin: 0 0 10px;
-  color: var(--green);
-  font-size: 13px;
-  letter-spacing: .06em;
-}
-
-.ai-result p,
-.ai-result li {
-  color: #c1d0c7;
-  font-size: 13px;
-  line-height: 1.7;
-}
-
-.ai-result ul,
-.ai-result ol {
-  padding-left: 22px;
-}
-
-.ai-result li {
-  margin-bottom: 8px;
-}
-
-.ai-result-block {
-  margin-top: 20px;
-}
-
-.ai-disclaimer {
-  margin-top: 18px;
-  padding-top: 13px;
-  border-top: 1px solid var(--border);
-  color: var(--muted);
+.nav-links a:not(.button) {
+  display: inline-block;
   font-size: 11px;
-  line-height: 1.7;
 }
-
-/* Telegram navigation */
-.telegram-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 10px 15px;
-  border: 1px solid #345443;
-  border-radius: 10px;
-  color: var(--green);
-  background: #173324;
-  text-decoration: none;
-  font-size: 12px;
-  font-weight: 750;
-  white-space: nowrap;
-}
-
-.telegram-link:hover {
-  background: #20452f;
-}
-
-@media (max-width: 600px) {
-  .telegram-link {
-    padding: 8px 10px;
-    font-size: 11px;
-  }
-}
-
-    @media (max-width: 800px) {
-      .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    }
-
-    @media (max-width: 600px) {
-      .wrap { width: min(100% - 28px, 1120px); padding-top: 22px; }
-      .intro { padding-top: 30px; }
-      .lookup-form { flex-direction: column; }
-      .lookup-form button { min-height: 47px; }
-      .data-grid { grid-template-columns: 1fr; }
-      .panel { padding: 17px; }
-      .metric { padding: 14px; }
-      .readonly { font-size: 9px; }
+      .cards { grid-template-columns: 1fr; }
+      .about-grid { grid-template-columns: 1fr; gap: 30px; }
+      .roadmap { grid-template-columns: 1fr; }
+      .hero { padding: 75px 0; }
+      section { padding: 60px 0; }
     }
   </style>
 </head>
 
 <body>
-<main class="wrap">
-
-  <header class="topbar">
-    <div class="brand">
-      <img
-  src="/near-sentinel-mascot.jpg"
-  alt="NEAR Sentinel mascot"
-  style="width:42px;height:42px;object-fit:cover;border-radius:50%;display:block;"
->
-      <span>NEAR Sentinel</span>
-    </div>
-    <div class="readonly">READ-ONLY MONITOR</div>
-<a
-  id="telegram-link"
-  class="telegram-link"
-  href="#"
-  target="_blank"
-  rel="noopener noreferrer"
-  hidden
->
-  Open Telegram Bot
-</a>
-  </header>
-
-  <section class="intro">
-    <div class="eyebrow">DeFi Risk Intelligence</div>
-    <h1>Lending Risk<br>Monitor</h1>
-    <p>
-      Monitor NEAR lending positions, collateral exposure, debt and
-      estimated liquidation levels using on-chain account data.
-    </p>
-  </section>
-
-  <section class="panel">
-    <h2 class="section-heading">Check a lending position</h2>
-
-    <form id="lookup" class="lookup-form">
-      <input
-        id="account"
-        autocomplete="off"
-        spellcheck="false"
-        placeholder="Enter a NEAR account, e.g. alice.near"
-        aria-label="NEAR account ID"
-        required
-      >
-      <button type="submit">Analyze position</button>
-    </form>
-
-    <div id="message" class="message hidden" aria-live="polite"></div>
-  </section>
-
-  <section id="dashboard" class="dashboard hidden" aria-live="polite">
-    <div class="account-heading">
-      <div>
-        <div class="account-label">Account being monitored</div>
-        <h2 id="account-name">—</h2>
+<header>
+  <div class="container">
+    <nav>
+      <a href="/" class="brand">
+        <img src="/near-sentinel-mascot.jpg" alt="NEAR Sentinel">
+        NEAR SENTINEL
+      </a>
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#about">About</a>
+        <a href="#roadmap">Roadmap</a>
+        <a href="/app" class="button">Launch App ></a>
       </div>
-      <div id="risk-status" class="status">Position loaded</div>
-    </div>
+    </nav>
+  </div>
+</header>
 
-    <div class="metrics">
-      <article class="metric primary">
-        <div class="metric-label">Health factor</div>
-        <div class="metric-value" id="health-factor">—</div>
-        <div class="metric-detail" id="health-detail">—</div>
-      </article>
+<main>
+  <section class="hero">
+    <div class="container">
+      <img class="mascot" src="/near-sentinel-mascot.jpg" alt="NEAR Sentinel mascot">
+      <div class="eyebrow">AI-POWERED DEFI RISK INTELLIGENCE</div>
 
-      <article class="metric">
-        <div class="metric-label">Collateral value</div>
-        <div class="metric-value" id="collateral-value">—</div>
-        <div class="metric-detail">Market value in USD</div>
-      </article>
+      <h1>
+        See risk before it becomes a <span>crisis.</span>
+      </h1>
 
-      <article class="metric">
-        <div class="metric-label">Debt value</div>
-        <div class="metric-value" id="debt-value">—</div>
-        <div class="metric-detail">Market value in USD</div>
-      </article>
-
-      <article class="metric">
-        <div class="metric-label">Adjusted collateral</div>
-        <div class="metric-value" id="adjusted-collateral">—</div>
-        <div class="metric-detail" id="adjusted-debt-detail">Adjusted debt: —</div>
-      </article>
-    </div>
-
-    <div class="data-grid">
-      <section class="data-panel">
-        <h3>COLLATERAL</h3>
-        <div id="collateral-list" class="asset-list"></div>
-      </section>
-
-      <section class="data-panel">
-        <h3>DEBT</h3>
-        <div id="debt-list" class="asset-list"></div>
-      </section>
-    </div>
-
-    <div class="margin-note">
-      <strong>MARGIN TRADING: NOT INTEGRATED</strong>
-      <p id="margin-reason">
-        Margin trading is not integrated into this risk calculation.
+      <p>
+        An AI-powered DeFi risk intelligence and early-warning agent
+        built for NEAR. Monitor lending positions, understand potential
+        threats, and make more informed decisions.
       </p>
-    </div>
 
-    <div class="timestamp" id="timestamp"></div>
+      <div class="hero-actions">
+        <a href="/app" class="button">Launch NEAR Sentinel -></a>
+        <a href="#features" class="button button-outline">Explore Platform</a>
+      </div>
+
+      <span class="hero-note">
+        Read-only monitoring | AI-powered analysis | Built on NEAR
+      </span>
+    </div>
   </section>
 
-<section class="panel ai-section" id="ai-analyst">
-  <div class="panel-header">
-    <div>
-      <span class="eyebrow">AI-POWERED INTELLIGENCE</span>
-      <h2>AI Risk Analyst</h2>
+  <section id="features">
+    <div class="container">
+      <div class="section-heading">
+        <h2>Intelligence for a safer DeFi experience</h2>
+        <p>
+          Bringing blockchain data, deterministic risk calculations,
+          and AI-powered interpretation into one platform.
+        </p>
+      </div>
+
+      <div class="cards">
+        <article class="card">
+          <div class="card-icon">RISK</div>
+          <h3>DeFi Risk Monitoring</h3>
+          <p>
+            Monitor RHEA Lend positions, collateral, debt,
+            health factors, and liquidation-related risk.
+          </p>
+        </article>
+
+        <article class="card">
+          <div class="card-icon">AI</div>
+          <h3>AI Risk Analyst</h3>
+          <p>
+            NEAR AI interprets validated risk data, explains
+            important findings, and provides recommendations.
+          </p>
+        </article>
+
+        <article class="card">
+          <div class="card-icon">ALERT</div>
+          <h3>Early-Warning Alerts</h3>
+          <p>
+            Receive Telegram notifications when monitored
+            lending positions reach configured risk thresholds.
+          </p>
+        </article>
+
+        <article class="card">
+          <div class="card-icon">TRACK</div>
+          <h3>Multi-Wallet Tracking</h3>
+          <p>
+            Organize multiple NEAR lending positions in one dashboard,
+            refresh wallet risk data and keep track of important accounts.
+          </p>
+        </article>
+      </div>
     </div>
-    <span class="status-badge">NEAR AI</span>
-  </div>
+  </section>
 
-  <p class="ai-description">
-    Go beyond health-factor monitoring. Get an AI-generated assessment
-    of a NEAR lending position, including risk factors, data quality
-    and recommended actions.
-  </p>
+  <section class="about" id="about">
+    <div class="container about-grid">
+      <div>
+        <div class="eyebrow">WHY NEAR SENTINEL?</div>
+        <h2>Making on-chain risk easier to understand.</h2>
+        <p>
+          DeFi users shouldn't have to interpret complex blockchain
+          data on their own to understand the risks in their positions.
+        </p>
+        <p>
+          Sentinel combines transparent risk calculations with
+          AI-powered explanations, helping users understand what
+          their data means.
+        </p>
+        <p>
+          RHEA Lend is our first integration. Our broader vision
+          is to expand risk intelligence across the NEAR DeFi ecosystem.
+        </p>
+      </div>
 
-  <form id="ai-form" class="lookup-form">
-    <input
-      id="ai-account"
-      type="text"
-      placeholder="Enter a NEAR account ID"
-      autocomplete="off"
-      required
-    />
-    <button type="submit" id="ai-button">Run AI Analysis</button>
-  </form>
+      <div class="steps">
+        <div class="step">
+          <strong>01  -  CONNECT</strong>
+          <p>Enter a NEAR account to retrieve its monitored lending position.</p>
+        </div>
+        <div class="step">
+          <strong>02  -  MONITOR</strong>
+          <p>Calculate health factors, collateral exposure, debt, and risk indicators.</p>
+        </div>
+        <div class="step">
+          <strong>03  -  UNDERSTAND</strong>
+          <p>Use AI analysis to interpret findings and understand potential threats.</p>
+        </div>
+        <div class="step">
+          <strong>04  -  STAY INFORMED</strong>
+          <p>Receive risk alerts through the Telegram monitoring bot.</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-  <div id="ai-message" role="status" aria-live="polite"></div>
-  <div id="ai-output" class="ai-result" hidden></div>
+    <section id="roadmap">
+    <div class="container">
+      <div class="section-heading">
+        <h2>The Road Ahead: Building a Smarter DeFi Security Layer for NEAR</h2>
+        <p>
+          From lending risk monitoring to ecosystem-wide intelligence
+          and AI-powered protection. Here is where NEAR Sentinel is heading.
+        </p>
+      </div>
 
-  <p class="ai-disclaimer">
-    AI analysis is interpretive and may be imperfect. Risk calculations
-    come from the deterministic monitoring engine. This tool is
-    read-only and does not execute transactions or provide financial advice.
-  </p>
-</section>
+      <div class="roadmap">
+        <article class="card">
+          <span class="status">FOUNDATION LIVE</span>
+          <h3>01. Real-Time DeFi Intelligence</h3>
+          <p>
+            Live RHEA Lend position monitoring, health-factor calculations,
+            oracle validation, AI-assisted analysis and Telegram alerts.
+            Next: protocol TVL, liquidity, utilization and smart-contract
+            activity monitoring, with exploit-signal detection.
+          </p>
+        </article>
 
-  <footer class="footer">
-    <strong>NEAR Sentinel</strong> · Independent DeFi risk intelligence.<br>
-    Not financial advice. Data may lag or be unavailable.<br>
-    Read-only monitoring: no wallet connection, private keys,
-    signatures or transactions are required.
-  </footer>
+        <article class="card">
+          <span class="status future">NEXT DEVELOPMENT</span>
+          <h3>02. Predictive AI Risk Engine</h3>
+          <p>
+            Building beyond threshold-based alerts toward machine-learning
+            anomaly detection, unusual activity signals, predictive early
+            warnings and cascading-risk analysis across connected protocols.
+          </p>
+        </article>
 
+        <article class="card">
+          <span class="status future">PLANNED</span>
+          <h3>03. Autonomous Protection</h3>
+          <p>
+            Pre-execution transaction simulation, configurable risk
+            guardrails, emergency circuit breakers and permission-controlled
+            automated mitigation for autonomous financial agents.
+          </p>
+        </article>
+
+        <article class="card">
+          <span class="status future">PLANNED EXPANSION</span>
+          <h3>04. Intent-Aware Risk Intelligence</h3>
+          <p>
+            AI-generated explanations for monitored lending positions are
+            live. The vision: natural-language risk queries, intent-aware
+            insights and dynamic health scoring across protocols and vaults.
+          </p>
+        </article>
+      </div>
+    </div>
+  </section>
+<section class="launch">
+    <div class="container">
+      <div class="eyebrow">ENTER THE SENTINEL ECOSYSTEM</div>
+      <h2>Stay ahead of DeFi risk.</h2>
+      <p>
+        Explore the live monitoring dashboard and AI Risk Analyst.
+        Start with a NEAR lending position.
+      </p>
+            <div class="hero-actions">
+        <a href="/app" class="button">Open NEAR Sentinel App</a>
+        <a
+          href="https://t.me/thenearsentinelbot"
+          class="button button-outline"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Open Telegram Bot
+        </a>
+      </div>
+    </div>
+  </section>
 </main>
 
-<script>
-const form = document.getElementById('lookup');
-const button = form.querySelector('button');
-const message = document.getElementById('message');
-const dashboard = document.getElementById('dashboard');
-
-function money(value) {
-  const n = Number(value);
-  if (!Number.isFinite(n)) return 'Unavailable';
-
-  return new Intl.NumberFormat(undefined, {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  }).format(n);
-}
-
-function amount(value) {
-  const n = Number(value);
-  if (!Number.isFinite(n)) return 'Unavailable';
-
-  const digits = Math.abs(n) >= 1 ? 4 :
-    Math.abs(n) >= 0.0001 ? 6 : 10;
-
-  return new Intl.NumberFormat(undefined, {
-    maximumFractionDigits: digits
-  }).format(n);
-}
-
-function price(value) {
-  const n = Number(value);
-  if (!Number.isFinite(n)) return 'Unavailable';
-
-  return new Intl.NumberFormat(undefined, {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: Math.abs(n) < 0.01 ? 6 : 4
-  }).format(n);
-}
-
-function percentage(value) {
-  const n = Number(value);
-  if (!Number.isFinite(n)) return 'Unavailable';
-
-  return `${n > 0 ? '+' : ''}${n.toFixed(2)}%`;
-}
-
-function setText(id, value) {
-  document.getElementById(id).textContent = value;
-}
-
-function showMessage(text, isError = false) {
-  message.textContent = text;
-  message.classList.remove('hidden', 'error');
-  if (isError) message.classList.add('error');
-}
-
-function setRiskStatus(data) {
-  const element = document.getElementById('risk-status');
-  element.className = 'status';
-
-  if (data.healthFactor === null || data.healthFactor === undefined) {
-    element.textContent = 'No outstanding debt';
-    return;
-  }
-
-  const hf = Number(data.healthFactor);
-
-  if (!Number.isFinite(hf)) {
-    element.textContent = 'Risk status unavailable';
-    element.classList.add('warning');
-  } else if (hf < 1) {
-    element.textContent = 'Below liquidation threshold';
-    element.classList.add('danger');
-  } else {
-    element.textContent = 'Above liquidation threshold';
-  }
-}
-
-function renderAssets(containerId, assets, side, hasDebt) {
-  const container = document.getElementById(containerId);
-  container.replaceChildren();
-
-  if (!Array.isArray(assets) || assets.length === 0) {
-    const empty = document.createElement('div');
-    empty.className = 'empty';
-    empty.textContent = side === 'collateral'
-      ? 'No active collateral found for this account.'
-      : 'No outstanding borrowed assets. This account currently has no recorded debt.';
-    container.appendChild(empty);
-    return;
-  }
-
-  for (const asset of assets) {
-    const row = document.createElement('div');
-    row.className = 'asset';
-
-    const left = document.createElement('div');
-    const name = document.createElement('div');
-    name.className = 'asset-name';
-    name.textContent = asset.symbol || asset.tokenId || 'Unknown asset';
-
-    const quantity = document.createElement('div');
-    quantity.className = 'asset-amount';
-    quantity.textContent = `${amount(asset.amount)} tokens`;
-
-    left.append(name, quantity);
-
-    const right = document.createElement('div');
-    right.className = 'asset-right';
-
-    const value = document.createElement('div');
-    value.className = 'asset-value';
-    value.textContent = money(Number(asset.amount) * Number(asset.priceUsd));
-
-    const unitPrice = document.createElement('div');
-    unitPrice.className = 'asset-price';
-    unitPrice.textContent = `Price: ${price(asset.priceUsd)}`;
-
-    right.append(value, unitPrice);
-
-    if (side === 'collateral') {
-      const liquidation = document.createElement('div');
-      liquidation.className = 'liquidation';
-
-      if (!hasDebt) {
-        liquidation.textContent = 'Liquidation estimate unavailable · no debt';
-      } else if (Number.isFinite(Number(asset.liquidationPriceUsd)) &&
-                 asset.liquidationPriceUsd !== undefined) {
-        liquidation.textContent =
-          `Est. liquidation: ${price(asset.liquidationPriceUsd)} · ${percentage(asset.liquidationMovePct)}`;
-      } else {
-        liquidation.textContent = 'Liquidation estimate unavailable';
-      }
-
-      right.appendChild(liquidation);
-    }
-
-    row.append(left, right);
-    container.appendChild(row);
-  }
-}
-
-function render(data) {
-  dashboard.classList.remove('hidden');
-  message.classList.add('hidden');
-
-  setText('account-name', data.accountId || 'Unknown account');
-
-  const noDebt = data.healthFactor === null ||
-                 data.healthFactor === undefined;
-
-  if (noDebt) {
-    setText('health-factor', 'N/A');
-    setText('health-detail', 'No outstanding debt');
-  } else {
-    const hf = Number(data.healthFactor);
-    setText('health-factor', Number.isFinite(hf) ? `${hf.toFixed(2)}×` : 'Unavailable');
-    setText('health-detail', Number.isFinite(hf)
-      ? `${(hf * 100).toFixed(2)}% adjusted collateral / debt`
-      : 'Unable to determine health factor');
-  }
-
-  setText('collateral-value', money(data.collateralUsd));
-  setText('debt-value', money(data.debtUsd));
-  setText('adjusted-collateral', money(data.adjustedCollateralUsd));
-  setText('adjusted-debt-detail', `Adjusted debt: ${money(data.adjustedDebtUsd)}`);
-
-  setRiskStatus(data);
-
-  renderAssets('collateral-list', data.collateral, 'collateral', !noDebt);
-  renderAssets('debt-list', data.debt, 'debt', !noDebt);
-
-  setText(
-    'margin-reason',
-    data.margin?.reason ||
-    'Margin trading is not integrated into this risk calculation.'
-  );
-
-  const timestamp = Number(data.priceTimestamp);
-  setText(
-    'timestamp',
-    Number.isFinite(timestamp) && timestamp > 0
-      ? `Price data timestamp: ${new Date(timestamp * 1000).toLocaleString()}`
-      : 'Price data timestamp unavailable.'
-  );
-}
-
-form.addEventListener('submit', async event => {
-  event.preventDefault();
-
-  const accountId = document.getElementById('account').value.trim();
-  if (!accountId) return;
-
-  button.disabled = true;
-  button.textContent = 'Analyzing…';
-  dashboard.classList.add('hidden');
-  showMessage('Retrieving account data and calculating lending risk…');
-
-  try {
-    const response = await fetch('/api/status', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ accountId })
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || 'Unable to retrieve this position.');
-    }
-
-    render(data);
-  } catch (error) {
-    dashboard.classList.add('hidden');
-    showMessage(
-      error instanceof Error ? error.message : 'An unexpected error occurred.',
-      true
-    );
-  } finally {
-    button.disabled = false;
-    button.textContent = 'Analyze position';
-  }
-});
-
-// Load the official Telegram bot link
-fetch('/api/config')
-  .then(response => {
-    if (!response.ok) throw new Error('Configuration unavailable');
-    return response.json();
-  })
-  .then(config => {
-    const link = document.getElementById('telegram-link');
-
-    if (config.telegramBotUrl) {
-      link.href = config.telegramBotUrl;
-      link.hidden = false;
-    }
-  })
-  .catch(error => console.error('Telegram link unavailable:', error));
-
-// NEAR Sentinel AI Risk Analyst
-const aiForm = document.getElementById('ai-form');
-const aiAccount = document.getElementById('ai-account');
-const aiButton = document.getElementById('ai-button');
-const aiMessage = document.getElementById('ai-message');
-const aiOutput = document.getElementById('ai-output');
-
-function addAISection(title, content) {
-  if (content === undefined || content === null || content === '') return;
-
-  const section = document.createElement('div');
-  section.className = 'ai-result-block';
-
-  const heading = document.createElement('h3');
-  heading.textContent = title;
-  section.appendChild(heading);
-
-  if (Array.isArray(content)) {
-    const list = document.createElement('ul');
-
-    content.forEach(item => {
-      const li = document.createElement('li');
-      li.textContent = typeof item === 'string'
-        ? item
-        : item.text ?? item.description ?? JSON.stringify(item);
-      list.appendChild(li);
-    });
-
-    section.appendChild(list);
-  } else {
-    const paragraph = document.createElement('p');
-    paragraph.textContent = typeof content === 'string'
-      ? content
-      : JSON.stringify(content, null, 2);
-    section.appendChild(paragraph);
-  }
-
-  aiOutput.appendChild(section);
-}
-
-aiForm.addEventListener('submit', async event => {
-  event.preventDefault();
-
-  const accountId = aiAccount.value.trim().toLowerCase();
-
-  aiButton.disabled = true;
-  aiButton.textContent = 'Analyzing...';
-  aiMessage.textContent = 'Fetching verified position data and running AI analysis...';
-  aiOutput.hidden = true;
-  aiOutput.replaceChildren();
-
-  try {
-    const response = await fetch('/api/analyze', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ accountId })
-    });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      throw new Error(result.error || 'AI analysis could not be completed.');
-    }
-
-    const analysis = result.analysis;
-
-    const heading = document.createElement('h2');
-    heading.textContent = `AI assessment: ${result.accountId}`;
-    aiOutput.appendChild(heading);
-
-    addAISection('SUMMARY', analysis.summary);
-    addAISection('KEY FINDINGS', analysis.findings ?? analysis.keyFindings);
-    addAISection(
-      'RECOMMENDED ACTIONS',
-      analysis.recommendedActions ?? analysis.actions
-    );
-    addAISection('DATA QUALITY', analysis.dataQuality);
-
-    aiOutput.hidden = false;
-    aiMessage.textContent = 'AI analysis completed.';
-  } catch (error) {
-    aiMessage.textContent = error.message || 'Something went wrong.';
-  } finally {
-    aiButton.disabled = false;
-    aiButton.textContent = 'Run AI Analysis';
-  }
-});
-</script>
+<footer>
+  <div class="container footer-inner">
+    <span>(c) 2026 NEAR Sentinel. Built on NEAR.</span>
+    <span>Read-only monitoring. Not financial advice. Data may lag.</span>
+    <a href="https://t.me/thenearsentinelbot" target="_blank" rel="noopener noreferrer">
+      Telegram Bot ->
+    </a>
+  </div>
+</footer>
 </body>
 </html>
+
